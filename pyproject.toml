@@ -1,5 +1,5 @@
 [project]
-name = "build123D-positioning"
+name = "b123D-positioning"
 version = "1.0.0"
 description = "`build123d` ergonomic selector methods"
 readme = "README.md"

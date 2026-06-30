@@ -26,6 +26,25 @@ wheels = [
 ]
 
 [[package]]
+name = "b123d-positioning"
+version = "1.0.0"
+source = { editable = "." }
+dependencies = [
+    { name = "build123d" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "build123d", specifier = ">=0.11.0" }]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pytest", specifier = ">=7.0.0" }]
+
+[[package]]
 name = "build123d"
 version = "0.11.0"
 source = { registry = "https://pypi.org/simple" }
@@ -58,25 +77,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/3b/0c/90667ff68fd77b575
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f3/57/2c2910ca2fbe913b5cdea8ab50d5ef2d59bbe7c71400a965c442a9d9a506/build123d-0.11.0-py3-none-any.whl", hash = "sha256:22bccaa4cf2cbdcc910f174e49fa359d7fb5a546cf245b0c26e354dd5cc2eb5f", size = 361848, upload-time = "2026-06-17T19:58:38.503Z" },
 ]
-
-[[package]]
-name = "build123d-position-shortcuts"
-version = "0.2.1"
-source = { editable = "." }
-dependencies = [
-    { name = "build123d" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "pytest" },
-]
-
-[package.metadata]
-requires-dist = [{ name = "build123d", specifier = ">=0.11.0" }]
-
-[package.metadata.requires-dev]
-dev = [{ name = "pytest", specifier = ">=7.0.0" }]
 
 [[package]]
 name = "cadquery-ocp-novtk"
