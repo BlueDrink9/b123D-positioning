@@ -71,27 +71,27 @@ def test_3d_vertex_selection():
 
 
 # ==========================================
-# 3. SPATIAL SELECTION (Grouped / all_)
+# 3. SPATIAL SELECTION (Grouped / as_list=True)
 # ==========================================
 
 
 def test_1d_grouped_vertex_selection():
-    """Test that 1D all_* methods return a plane of vertices."""
+    """Test that 1D selectors with as_list=True return a plane of vertices."""
     shape = Box(10, 10, 10)
 
     # A box has 4 vertices on its top face
-    top_verts = shape.vertices().all_top()
+    top_verts = shape.vertices().top(as_list=True)
 
     assert len(top_verts) == 4
     assert all(v.Z == 5 for v in top_verts)
 
 
 def test_2d_grouped_vertex_selection():
-    """Test that 2D all_* methods return an axis-aligned line of vertices."""
+    """Test that 2D selectors with as_list=True return an axis-aligned line of vertices."""
     shape = Box(10, 10, 10)
 
     # A box has 2 vertices along its front-left edge
-    front_left_verts = shape.vertices().all_front_left()
+    front_left_verts = shape.vertices().front_left(as_list=True)
 
     assert len(front_left_verts) == 2
     assert all(v.Y == -5 and v.X == -5 for v in front_left_verts)
