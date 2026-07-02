@@ -27,7 +27,7 @@ wheels = [
 
 [[package]]
 name = "b123d-positioning"
-version = "1.0.0"
+version = "2.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "build123d" },
