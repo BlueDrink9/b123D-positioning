@@ -104,93 +104,111 @@ ShapeList.smallest = smallest
 # Y-Axis: front (FIRST), back (LAST)
 # X-Axis: left (FIRST), right (LAST)
 
+
+def _make_selector(*directives: tuple[Axis, int]):
+    """Factory to generate spatial selector lambdas."""
+    return lambda self, as_list=False: _select(self, *directives, as_list=as_list)
+
 # --- 1D Shortcuts (Single Axis) ---
-ShapeList.bottom = lambda self: _select(self, (Axis.Z, FIRST))
-
-ShapeList.top = lambda self: _select(self, (Axis.Z, LAST))
-
-ShapeList.front = lambda self: _select(self, (Axis.Y, FIRST))
-
-ShapeList.back = lambda self: _select(self, (Axis.Y, LAST))
-
-ShapeList.left = lambda self: _select(self, (Axis.X, FIRST))
-
-ShapeList.right = lambda self: _select(self, (Axis.X, LAST))
-
+ShapeList.bottom = _make_selector((Axis.Z, FIRST))
+ShapeList.top = _make_selector((Axis.Z, LAST))
+ShapeList.front = _make_selector((Axis.Y, FIRST))
+ShapeList.back = _make_selector((Axis.Y, LAST))
+ShapeList.left = _make_selector((Axis.X, FIRST))
+ShapeList.right = _make_selector((Axis.X, LAST))
 
 # --- 2D Shortcuts (Double Axis) ---
-ShapeList.bottom_front = lambda self: _select(
-    self, (Axis.Z, FIRST), (Axis.Y, FIRST)
-)
+# Z & Y
+ShapeList.bottom_front = _make_selector((Axis.Z, FIRST), (Axis.Y, FIRST))
+ShapeList.front_bottom = _make_selector((Axis.Y, FIRST), (Axis.Z, FIRST))
+ShapeList.bottom_back = _make_selector((Axis.Z, FIRST), (Axis.Y, LAST))
+ShapeList.back_bottom = _make_selector((Axis.Y, LAST), (Axis.Z, FIRST))
+ShapeList.top_front = _make_selector((Axis.Z, LAST), (Axis.Y, FIRST))
+ShapeList.front_top = _make_selector((Axis.Y, FIRST), (Axis.Z, LAST))
+ShapeList.top_back = _make_selector((Axis.Z, LAST), (Axis.Y, LAST))
+ShapeList.back_top = _make_selector((Axis.Y, LAST), (Axis.Z, LAST))
 
-ShapeList.bottom_back = lambda self: _select(
-    self, (Axis.Z, FIRST), (Axis.Y, LAST)
-)
+# Z & X
+ShapeList.bottom_left = _make_selector((Axis.Z, FIRST), (Axis.X, FIRST))
+ShapeList.left_bottom = _make_selector((Axis.X, FIRST), (Axis.Z, FIRST))
+ShapeList.bottom_right = _make_selector((Axis.Z, FIRST), (Axis.X, LAST))
+ShapeList.right_bottom = _make_selector((Axis.X, LAST), (Axis.Z, FIRST))
+ShapeList.top_left = _make_selector((Axis.Z, LAST), (Axis.X, FIRST))
+ShapeList.left_top = _make_selector((Axis.X, FIRST), (Axis.Z, LAST))
+ShapeList.top_right = _make_selector((Axis.Z, LAST), (Axis.X, LAST))
+ShapeList.right_top = _make_selector((Axis.X, LAST), (Axis.Z, LAST))
 
-ShapeList.bottom_left = lambda self: _select(
-    self, (Axis.Z, FIRST), (Axis.X, FIRST)
-)
-
-ShapeList.bottom_right = lambda self: _select(
-    self, (Axis.Z, FIRST), (Axis.X, LAST)
-)
-
-ShapeList.top_front = lambda self: _select(
-    self, (Axis.Z, LAST), (Axis.Y, FIRST)
-)
-
-ShapeList.top_back = lambda self: _select(self, (Axis.Z, LAST), (Axis.Y, LAST))
-
-ShapeList.top_left = lambda self: _select(self, (Axis.Z, LAST), (Axis.X, FIRST))
-
-ShapeList.top_right = lambda self: _select(self, (Axis.Z, LAST), (Axis.X, LAST))
-
-ShapeList.front_left = lambda self: _select(
-    self, (Axis.Y, FIRST), (Axis.X, FIRST)
-)
-
-ShapeList.front_right = lambda self: _select(
-    self, (Axis.Y, FIRST), (Axis.X, LAST)
-)
-
-ShapeList.back_left = lambda self: _select(
-    self, (Axis.Y, LAST), (Axis.X, FIRST)
-)
-
-ShapeList.back_right = lambda self: _select(
-    self, (Axis.Y, LAST), (Axis.X, LAST)
-)
-
+# Y & X
+ShapeList.front_left = _make_selector((Axis.Y, FIRST), (Axis.X, FIRST))
+ShapeList.left_front = _make_selector((Axis.X, FIRST), (Axis.Y, FIRST))
+ShapeList.front_right = _make_selector((Axis.Y, FIRST), (Axis.X, LAST))
+ShapeList.right_front = _make_selector((Axis.X, LAST), (Axis.Y, FIRST))
+ShapeList.back_left = _make_selector((Axis.Y, LAST), (Axis.X, FIRST))
+ShapeList.left_back = _make_selector((Axis.X, FIRST), (Axis.Y, LAST))
+ShapeList.back_right = _make_selector((Axis.Y, LAST), (Axis.X, LAST))
+ShapeList.right_back = _make_selector((Axis.X, LAST), (Axis.Y, LAST))
 
 # --- 3D Shortcuts (Triple Axis) ---
-ShapeList.bottom_front_left = lambda self: _select(
-    self, (Axis.Z, FIRST), (Axis.Y, FIRST), (Axis.X, FIRST)
-)
+# (-Z, -Y, -X)
+ShapeList.bottom_front_left = _make_selector((Axis.Z, FIRST), (Axis.Y, FIRST), (Axis.X, FIRST))
+ShapeList.bottom_left_front = _make_selector((Axis.Z, FIRST), (Axis.X, FIRST), (Axis.Y, FIRST))
+ShapeList.front_bottom_left = _make_selector((Axis.Y, FIRST), (Axis.Z, FIRST), (Axis.X, FIRST))
+ShapeList.front_left_bottom = _make_selector((Axis.Y, FIRST), (Axis.X, FIRST), (Axis.Z, FIRST))
+ShapeList.left_bottom_front = _make_selector((Axis.X, FIRST), (Axis.Z, FIRST), (Axis.Y, FIRST))
+ShapeList.left_front_bottom = _make_selector((Axis.X, FIRST), (Axis.Y, FIRST), (Axis.Z, FIRST))
 
-ShapeList.bottom_front_right = lambda self: _select(
-    self, (Axis.Z, FIRST), (Axis.Y, FIRST), (Axis.X, LAST)
-)
+# (-Z, -Y, +X)
+ShapeList.bottom_front_right = _make_selector((Axis.Z, FIRST), (Axis.Y, FIRST), (Axis.X, LAST))
+ShapeList.bottom_right_front = _make_selector((Axis.Z, FIRST), (Axis.X, LAST), (Axis.Y, FIRST))
+ShapeList.front_bottom_right = _make_selector((Axis.Y, FIRST), (Axis.Z, FIRST), (Axis.X, LAST))
+ShapeList.front_right_bottom = _make_selector((Axis.Y, FIRST), (Axis.X, LAST), (Axis.Z, FIRST))
+ShapeList.right_bottom_front = _make_selector((Axis.X, LAST), (Axis.Z, FIRST), (Axis.Y, FIRST))
+ShapeList.right_front_bottom = _make_selector((Axis.X, LAST), (Axis.Y, FIRST), (Axis.Z, FIRST))
 
-ShapeList.bottom_back_left = lambda self: _select(
-    self, (Axis.Z, FIRST), (Axis.Y, LAST), (Axis.X, FIRST)
-)
+# (-Z, +Y, -X)
+ShapeList.bottom_back_left = _make_selector((Axis.Z, FIRST), (Axis.Y, LAST), (Axis.X, FIRST))
+ShapeList.bottom_left_back = _make_selector((Axis.Z, FIRST), (Axis.X, FIRST), (Axis.Y, LAST))
+ShapeList.back_bottom_left = _make_selector((Axis.Y, LAST), (Axis.Z, FIRST), (Axis.X, FIRST))
+ShapeList.back_left_bottom = _make_selector((Axis.Y, LAST), (Axis.X, FIRST), (Axis.Z, FIRST))
+ShapeList.left_bottom_back = _make_selector((Axis.X, FIRST), (Axis.Z, FIRST), (Axis.Y, LAST))
+ShapeList.left_back_bottom = _make_selector((Axis.X, FIRST), (Axis.Y, LAST), (Axis.Z, FIRST))
 
-ShapeList.bottom_back_right = lambda self: _select(
-    self, (Axis.Z, FIRST), (Axis.Y, LAST), (Axis.X, LAST)
-)
+# (-Z, +Y, +X)
+ShapeList.bottom_back_right = _make_selector((Axis.Z, FIRST), (Axis.Y, LAST), (Axis.X, LAST))
+ShapeList.bottom_right_back = _make_selector((Axis.Z, FIRST), (Axis.X, LAST), (Axis.Y, LAST))
+ShapeList.back_bottom_right = _make_selector((Axis.Y, LAST), (Axis.Z, FIRST), (Axis.X, LAST))
+ShapeList.back_right_bottom = _make_selector((Axis.Y, LAST), (Axis.X, LAST), (Axis.Z, FIRST))
+ShapeList.right_bottom_back = _make_selector((Axis.X, LAST), (Axis.Z, FIRST), (Axis.Y, LAST))
+ShapeList.right_back_bottom = _make_selector((Axis.X, LAST), (Axis.Y, LAST), (Axis.Z, FIRST))
 
-ShapeList.top_front_left = lambda self: _select(
-    self, (Axis.Z, LAST), (Axis.Y, FIRST), (Axis.X, FIRST)
-)
+# (+Z, -Y, -X)
+ShapeList.top_front_left = _make_selector((Axis.Z, LAST), (Axis.Y, FIRST), (Axis.X, FIRST))
+ShapeList.top_left_front = _make_selector((Axis.Z, LAST), (Axis.X, FIRST), (Axis.Y, FIRST))
+ShapeList.front_top_left = _make_selector((Axis.Y, FIRST), (Axis.Z, LAST), (Axis.X, FIRST))
+ShapeList.front_left_top = _make_selector((Axis.Y, FIRST), (Axis.X, FIRST), (Axis.Z, LAST))
+ShapeList.left_top_front = _make_selector((Axis.X, FIRST), (Axis.Z, LAST), (Axis.Y, FIRST))
+ShapeList.left_front_top = _make_selector((Axis.X, FIRST), (Axis.Y, FIRST), (Axis.Z, LAST))
 
-ShapeList.top_front_right = lambda self: _select(
-    self, (Axis.Z, LAST), (Axis.Y, FIRST), (Axis.X, LAST)
-)
+# (+Z, -Y, +X)
+ShapeList.top_front_right = _make_selector((Axis.Z, LAST), (Axis.Y, FIRST), (Axis.X, LAST))
+ShapeList.top_right_front = _make_selector((Axis.Z, LAST), (Axis.X, LAST), (Axis.Y, FIRST))
+ShapeList.front_top_right = _make_selector((Axis.Y, FIRST), (Axis.Z, LAST), (Axis.X, LAST))
+ShapeList.front_right_top = _make_selector((Axis.Y, FIRST), (Axis.X, LAST), (Axis.Z, LAST))
+ShapeList.right_top_front = _make_selector((Axis.X, LAST), (Axis.Z, LAST), (Axis.Y, FIRST))
+ShapeList.right_front_top = _make_selector((Axis.X, LAST), (Axis.Y, FIRST), (Axis.Z, LAST))
 
-ShapeList.top_back_left = lambda self: _select(
-    self, (Axis.Z, LAST), (Axis.Y, LAST), (Axis.X, FIRST)
-)
+# (+Z, +Y, -X)
+ShapeList.top_back_left = _make_selector((Axis.Z, LAST), (Axis.Y, LAST), (Axis.X, FIRST))
+ShapeList.top_left_back = _make_selector((Axis.Z, LAST), (Axis.X, FIRST), (Axis.Y, LAST))
+ShapeList.back_top_left = _make_selector((Axis.Y, LAST), (Axis.Z, LAST), (Axis.X, FIRST))
+ShapeList.back_left_top = _make_selector((Axis.Y, LAST), (Axis.X, FIRST), (Axis.Z, LAST))
+ShapeList.left_top_back = _make_selector((Axis.X, FIRST), (Axis.Z, LAST), (Axis.Y, LAST))
+ShapeList.left_back_top = _make_selector((Axis.X, FIRST), (Axis.Y, LAST), (Axis.Z, LAST))
 
-ShapeList.top_back_right = lambda self: _select(
-    self, (Axis.Z, LAST), (Axis.Y, LAST), (Axis.X, LAST)
-)
+# (+Z, +Y, +X)
+ShapeList.top_back_right = _make_selector((Axis.Z, LAST), (Axis.Y, LAST), (Axis.X, LAST))
+ShapeList.top_right_back = _make_selector((Axis.Z, LAST), (Axis.X, LAST), (Axis.Y, LAST))
+ShapeList.back_top_right = _make_selector((Axis.Y, LAST), (Axis.Z, LAST), (Axis.X, LAST))
+ShapeList.back_right_top = _make_selector((Axis.Y, LAST), (Axis.X, LAST), (Axis.Z, LAST))
+ShapeList.right_top_back = _make_selector((Axis.X, LAST), (Axis.Z, LAST), (Axis.Y, LAST))
+ShapeList.right_back_top = _make_selector((Axis.X, LAST), (Axis.Y, LAST), (Axis.Z, LAST))
