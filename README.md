@@ -52,12 +52,22 @@ If you use a singular selector (e.g., `.left()`) on a dimension where multiple s
 
 ## Dimensional Selectors
 
-Sorts the `ShapeList` based on physical size properties (`.length` for Edges, `.area` for Faces, and `.volume` for Solids).
+Filters the `ShapeList` based on physical size properties (`.length` for Edges, `.area` for Faces, and `.volume` for Solids). Just like spatial selectors, dimensional selectors support the `as_list=True` parameter to return all shapes that tie for that extreme size (within a specified tolerance).
 
 | Method | Description |
-| --- | --- |
-| `largest()` | Returns the single largest shape in the list. |
-| `smallest()` | Returns the single smallest shape in the list. |
+| :--- | :--- |
+| `largest(as_list=False, tol=1e-5)` | Returns the largest shape(s) in the list. |
+| `smallest(as_list=False, tol=1e-5)` | Returns the smallest shape(s) in the list. |
+| `longest(as_list=False, tol=1e-5)` | An alias for `largest()`; improves readability when filtering Edges. |
+| `shortest(as_list=False, tol=1e-5)` | An alias for `smallest()`; improves readability when filtering Edges. |
+
+```python
+# Grab all edges tied for the longest length
+long_edges = base.edges().longest(as_list=True)
+
+# Grab the single smallest face (will warn if multiple faces tie for smallest)
+tiny_face = base.faces().smallest()
+```
 
 *Note: Dimensional selectors will raise a `ValueError` if used on `Vertex` objects, as they are dimensionless.*
 

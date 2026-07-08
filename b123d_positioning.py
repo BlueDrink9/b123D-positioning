@@ -9,36 +9,11 @@ Usage:
 
 from typing import Any
 import warnings
+import math
 from build123d import ShapeList, Axis, Vertex, Edge, Face, Solid
 
 FIRST = 0
 LAST = -1
-
-
-def _get_size(shape: Any) -> float:
-    """
-    Evaluates the physical size of a shape dynamically based on its class type.
-
-    Args:
-        shape (Any): A build123d Edge, Face, or Solid.
-
-    Returns:
-        float: The length, area, or volume of the shape.
-
-    Raises:
-        ValueError: If the shape is dimensionless (e.g., a Vertex) or unsupported.
-    """
-    match shape:
-        case Edge():
-            return shape.length
-        case Face():
-            return shape.area
-        case Solid():
-            return shape.volume
-        case _:
-            raise ValueError(
-                f"Size operations not supported for {type(shape).__name__}."
-            )
 
 
 def _select(
@@ -83,19 +58,93 @@ def _select(
 
     return result
 
+def _select_size(
+    shapes: ShapeList, find_max: bool = True, as_list: bool = False, tol: float = 1e-5
+) -> Any:
+    """
+    Core engine for dimensional selections (largest/smallest/longest/shortest).
 
-def largest(self: ShapeList) -> Any:
-    """Returns the largest shape in the list based on length, area, or volume."""
-    return sorted(self, key=_get_size)[LAST] if self else self
+    Args:
+        shapes (ShapeList): The list of shapes to filter.
+        find_max (bool): If True, finds largest/longest. If False, finds smallest/shortest.
+        as_list (bool):
+            If False (default), returns the single most extreme Shape by size.
+            If True, returns a ShapeList containing all shapes tied for that size.
+        tol (float): Relative tolerance for tie-breaking. Defaults to 1e-5 (0.001%).
+
+    Returns:
+        Any: A single Shape (if as_list=False) or a ShapeList (if as_list=True).
+    """
+    if not shapes:
+        return shapes
+
+    # 1. Evaluate sizes exactly once to avoid duplicate CAD kernel computations
+    cached_sizes = [(s, _get_size(s)) for s in shapes]
+
+    # 2. Find extreme value in O(N) time
+    extreme_val = max(cached_sizes, key=lambda x: x[1])[1] if find_max else min(cached_sizes, key=lambda x: x[1])[1]
+
+    # 3. Filter using cached floats and user-configurable relative tolerance
+    extreme_group = ShapeList([
+        item[0] for item in cached_sizes
+        if math.isclose(item[1], extreme_val, rel_tol=tol, abs_tol=1e-7)
+    ])
+
+    if not as_list:
+        if len(extreme_group) > 1:
+            warnings.warn(
+                f"Ambiguous selection: You asked for a single shape, but the current geometry "
+                f"makes this ambiguous ({len(extreme_group)} shapes share this exact size). "
+                f"Returning an arbitrary shape. To fix this, pass 'as_list=True' to select the "
+                f"entire group, or use spatial selectors to narrow it down.",
+                UserWarning,
+                stacklevel=3
+            )
+        return extreme_group[0]
+
+    return extreme_group
 
 
-def smallest(self: ShapeList) -> Any:
-    """Returns the smallest shape in the list based on length, area, or volume."""
-    return sorted(self, key=_get_size)[FIRST] if self else self
+# ==========================================
+# DIMENSIONAL EXPLICIT INTERFACE
+# ==========================================
 
+def _make_size_selector(find_max: bool = True):
+    """Factory to generate size selector lambdas (largest/smallest/longest/shortest)."""
+    return lambda self, as_list=False, tol=1e-5: _select_size(
+        self, find_max=find_max, as_list=as_list, tol=tol
+    )
 
-ShapeList.largest = largest
-ShapeList.smallest = smallest
+ShapeList.largest = _make_size_selector(find_max=True)
+ShapeList.longest = ShapeList.largest
+ShapeList.smallest = _make_size_selector(find_max=False)
+ShapeList.shortest = ShapeList.smallest
+
+def _get_size(shape: Any) -> float:
+    """
+    Evaluates the physical size of a shape dynamically based on its class type.
+
+    Args:
+        shape (Any): A build123d Edge, Face, or Solid.
+
+    Returns:
+        float: The length, area, or volume of the shape.
+
+    Raises:
+        ValueError: If the shape is dimensionless (e.g., a Vertex) or unsupported.
+    """
+    match shape:
+        case Edge():
+            return shape.length
+        case Face():
+            return shape.area
+        case Solid():
+            return shape.volume
+        case _:
+            raise ValueError(
+                f"Size operations not supported for {type(shape).__name__}."
+            )
+
 
 # ==========================================
 # SPATIAL EXPLICIT INTERFACE

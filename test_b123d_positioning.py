@@ -7,7 +7,8 @@ Run with: `pytest test_b123d_positioning.py`
 
 import warnings
 import pytest
-from build123d import Box, Vector
+import math
+from build123d import Cone, Box, Vector
 import b123d_positioning  # Applies the monkey-patch to ShapeList
 
 
@@ -15,25 +16,69 @@ import b123d_positioning  # Applies the monkey-patch to ShapeList
 # 1. EXTENTS (Largest / Smallest)
 # ==========================================
 
-
 def test_extents_faces():
     """Test that largest/smallest correctly identifies faces by area."""
-    # Box dimensions: X=10, Y=6, Z=2
-    # Resulting face areas: Z-normal=60, Y-normal=20, X-normal=12
-    shape = Box(10, 6, 2)
+    shape = Cone(20, 1, height=0.5)
     faces = shape.faces()
 
-    assert faces.largest().area == pytest.approx(60)
-    assert faces.smallest().area == pytest.approx(12)
+    assert faces.largest().area == pytest.approx(math.pi * 20**2)
+    assert faces.smallest().area == pytest.approx(math.pi * 1**2)
 
 
 def test_extents_edges():
     """Test that largest/smallest correctly identifies edges by length."""
+    shape = Cone(20, 1, height=2)
+    edges = shape.edges()
+
+    assert edges.largest().length == math.pi * 2 * 20
+    assert edges.smallest().length == math.pi * 2 * 1
+
+def test_extents_singular_warns_on_ties():
+    """Test that singular extents emit a warning when multiple shapes tie for size."""
+    # Box dimensions: X=10, Y=6, Z=2
+    # Face areas: Z-normal=60, Y-normal=20, X-normal=12 (2 of each, creating a tie for largest/smallest)
+    shape = Box(10, 6, 2)
+    faces = shape.faces()
+
+    with pytest.warns(UserWarning, match=r"makes this ambiguous \(2 shapes share this exact size\)"):
+        largest_face = faces.largest()
+        assert largest_face.area == pytest.approx(60)
+
+    with pytest.warns(UserWarning, match=r"makes this ambiguous \(2 shapes share this exact size\)"):
+        smallest_face = faces.smallest()
+        assert smallest_face.area == pytest.approx(12)
+
+
+def test_extents_grouped_as_list():
+    """Test that extents return a ShapeList of all tied shapes when as_list=True."""
+    # A cube has 6 identical faces (area=100) and 12 identical edges (length=10)
+    shape = Box(10, 10, 10)
+
+    largest_faces = shape.faces().largest(as_list=True)
+    assert len(largest_faces) == 6
+    assert all(f.area == pytest.approx(100) for f in largest_faces)
+
+    shortest_edges = shape.edges().shortest(as_list=True)
+    assert len(shortest_edges) == 12
+    assert all(e.length == pytest.approx(10) for e in shortest_edges)
+
+
+def test_extents_tolerance_filtering():
+    """Test that a large relative tolerance groups shapes of dissimilar sizes together."""
+    # Box(10, 6, 2) has 4 edges of length 10, 4 of length 6, and 4 of length 2.
     shape = Box(10, 6, 2)
     edges = shape.edges()
 
-    assert edges.largest().length == 10
-    assert edges.smallest().length == 2
+    # With default tolerance, ONLY the 4 longest edges (length 10) should be returned.
+    strict_edges = edges.longest(as_list=True)
+    assert len(strict_edges) == 4
+    assert {e.length for e in strict_edges} == {10}
+
+    # With a 50% relative tolerance (tol=0.5), any edge within 10 ± 5 is included.
+    # This should return the 4 edges of length 10 AND the 4 edges of length 6 (8 total).
+    loose_edges = edges.longest(as_list=True, tol=0.5)
+    assert len(loose_edges) == 8
+    assert {e.length for e in loose_edges} == {6, 10}
 
 
 def test_extents_vertex_raises_value_error():
