@@ -1,6 +1,6 @@
 [project]
 name = "b123D-positioning"
-version = "2.0.0"
+version = "2.1.0"
 description = "`build123d` ergonomic selector methods"
 readme = "README.md"
 requires-python = ">=3.10"
