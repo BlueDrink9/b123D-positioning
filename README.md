@@ -73,6 +73,42 @@ tiny_face = base.faces().smallest()
 
 ---
 
+## Orientation Selectors
+
+Orientation selectors filter shapes based on their angle and alignment in 3D space. To align human intuition with CAD geometry, the vocabulary is specifically tailored to how we visualize lines versus surfaces:
+
+* **Universal Selectors:** `.horizontal()` and `.vertical()` work across both Edges and Faces. Under the hood, they intelligently evaluate **Tangents** for Edges and **Normals** for Faces.
+* **Edge Selectors (`along_*`):** Filters edges by the physical path of their line.
+* **Face Selectors (`facing_*`):** Filters faces by the direction their surface is "looking" (their normal vector).
+
+| Method | Supported Shapes | Description |
+| :--- | :--- | :--- |
+| `horizontal(as_list=False)` | Edges, Faces | Flat surfaces (XY plane) or level-running edges. |
+| `vertical(as_list=False)` | Edges, Faces | Upright walls or vertical Z-running edges. |
+| `along_x(as_list=False)` | **Edges only** | Edges running left-to-right parallel to the X-axis. |
+| `along_y(as_list=False)` | **Edges only** | Edges running front-to-back parallel to the Y-axis. |
+| `along_z(as_list=False)` | **Edges only** | Edges running up-and-down (synonym for `vertical()`). |
+| `facing_x(as_list=False)` | **Faces only** | Outer side walls facing left or right (Normal $\parallel$ X). |
+| `facing_y(as_list=False)` | **Faces only** | Outer front or back walls (Normal $\parallel$ Y). |
+| `facing_z(as_list=False)` | **Faces only** | Top or bottom floors/ceilings (synonym for `horizontal()`). |
+
+```python
+# Extract all upright side walls of a model
+side_walls = base.faces().vertical(as_list=True)
+
+# Extract only the edges running front-to-back along the Y axis
+y_lines = base.edges().along_y(as_list=True)
+
+# Extract the outer left and right facing walls
+side_faces = base.faces().facing_x(as_list=True)
+```
+
+### Type Guardrails & Tolerances
+
+* Type Safety: Attempting to use a line-path selector (`.along_x()`) on a Face, or a surface-normal selector (`.facing_x()`) on an Edge will immediately raise a descriptive `ValueError` directing you to the correct method.
+
+* Ambiguity: Calling an orientation selector with `as_list=False` (default) when multiple shapes match will emit a `UserWarning` and return an arbitrary matching shape. Pass `as_list=True` to safely return the entire group.
+
 ## Technical Notes
 
 * **Evaluation Engine:** Under the hood, spatial selectors rely on standard `build123d` bounding box centers. To evaluate geometry, the engine chains `group_by` operations across all specified axes to drill down to the final geometric extreme. If a single shape is requested (`as_list=False`), it extracts the first instance from that final group. If a subset is requested (`as_list=True`), it returns the entire final group.
